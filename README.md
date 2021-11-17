@@ -1,68 +1,51 @@
-![LibreSpeed Logo](https://github.com/librespeed/speedtest/blob/master/.logo/logo3.png?raw=true)
+The `Dockerfile` and scripts of this repo enable HTTPS in dockerized [librespeed/speedtest](https://github.com/librespeed/speedtest)
 
-# LibreSpeed
+Build the image:
 
-No Flash, No Java, No Websocket, No Bullshit.
+```shell
+docker build -t my-speedtest .
+```
 
-This is a very lightweight Speedtest implemented in Javascript, using XMLHttpRequest and Web Workers.
+Run an instance:
 
-## Try it
-[Take a Speedtest](https://librespeed.org)
+1. Linux CLI, bridged
 
-## Compatibility
-All modern browsers are supported: IE11, latest Edge, latest Chrome, latest Firefox, latest Safari.  
-Works with mobile versions too.
+    ```shell
+    docker run -d \
+        --name speedtest-tls \
+        -e TITLE=<your title> \
+        -v <host certificate path>:/etc/apache2/certificate \
+        -p 8443:8443 \
+        my-speedtest
+    ```
 
-## Features
-* Download
-* Upload
-* Ping
-* Jitter
-* IP Address, ISP, distance from server (optional)
-* Telemetry (optional)
-* Results sharing (optional)
-* Multiple Points of Test (optional)
+2. Linux CLI, host network
 
-![Screenshot](https://speedtest.fdossena.com/mpot_v6.gif)
+    ```shell
+    docker run -d \
+        --name speedtest-tls \
+        -e TITLE=<your title> \
+        -v <host certificate path>:/etc/apache2/certificate \
+        --network host \
+        my-speedtest
+    ```
 
+3. Synology DSM UI
+    - Advanced Settings
+        - [x] Enable auto-restart
+        - [x] Create shortcut on desktop
+    - Volume: mount your certificate folder to `/etc/apache2/`
+    - Network:
+        - [x] Use the same network as Docker Host
+    - Environment: set `TITLE`
 
-## Server requirements
-* A reasonably fast web server with Apache 2 (nginx, IIS also supported)
-* PHP 5.4 (other backends also available)
-* MySQL database to store test results (optional, PostgreSQL and SQLite also supported)
-* A fast! internet connection
+4. PowerShell
 
-## Installation videos
-* [Quick start installation guide for Ubuntu Server 19.04](https://fdossena.com/?p=speedtest/quickstart_v5_ubuntu.frag)
-
-## Android app
-A template to build an Android client for your LibreSpeed installation is available [here](https://github.com/librespeed/speedtest-android).
-
-## Docker
-A docker image is available on the [Docker Hub](https://registry.hub.docker.com/r/adolfintel/speedtest), see `doc_docker.md` for more info about it
-
-## Go backend
-A Go implementation is available in the [`speedtest-go`](https://github.com/librespeed/speedtest-go) repo, maintained by [Maddie Zhan](https://github.com/maddie).
-
-## Node.js backend
-A partial Node.js implementation is available in the `node` branch, developed by [dunklesToast](https://github.com/dunklesToast). It's not recommended to use at the moment.
-
-## Donate
-[![Donate with Liberapay](https://liberapay.com/assets/widgets/donate.svg)](https://liberapay.com/fdossena/donate)  
-[Donate with PayPal](https://www.paypal.me/sineisochronic)  
-
-## License
-Copyright (C) 2016-2021 Federico Dossena
-
-This program is free software: you can redistribute it and/or modify
-it under the terms of the GNU Lesser General Public License as published by
-the Free Software Foundation, either version 3 of the License, or
-(at your option) any later version.
-
-This program is distributed in the hope that it will be useful,
-but WITHOUT ANY WARRANTY; without even the implied warranty of
-MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-GNU General Public License for more details.
-
-You should have received a copy of the GNU Lesser General Public License
-along with this program.  If not, see <https://www.gnu.org/licenses/lgpl>.
+    ```powershell
+    docker run -d `
+        --name speedtest-tls `
+        -e TITLE=<your title> `
+        -v <host certificate path>:/etc/apache2/certificate `
+        -p 8443:8443 `
+        my-speedtest
+    ```
