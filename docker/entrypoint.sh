@@ -57,12 +57,45 @@ fi
 chown -R www-data /var/www/html/*
 
 # Allow selection of Apache port for network_mode: host
-if [ "$WEBPORT" != "80" ]; then
-  sed -i "s/^Listen 80\$/Listen $WEBPORT/g" /etc/apache2/ports.conf
-  sed -i "s/*:80>/*:$WEBPORT>/g" /etc/apache2/sites-available/000-default.conf 
+
+sed -i "s/^Listen 80\$/Listen $HTTP_PORT/g" /etc/apache2/ports.conf
+sed -i "s/Listen 443\$/Listen $HTTPS_PORT/g" /etc/apache2/ports.conf
+sed -i "s/*:80>/*:$HTTP_PORT>/g" /etc/apache2/sites-available/000-default.conf 
+
+# HTTPS configuration 
+# Note: coexistence of both HTTP and HTTPS is not considered yet
+
+if [[ "$ENABLE_HTTPS" == "true" && "$DISABLE_HTTP" == "true" ]]; then
+  sed -i "s/^Listen $HTTP_PORT\$/# Listen $HTTP_PORT/g" /etc/apache2/ports.conf
+  sed -i "s/*:$HTTP_PORT>/*:$HTTPS_PORT>/g" /etc/apache2/sites-available/000-default.conf 
+
+  SEARCH_PATTERN="/<\/VirtualHost>/"
+
+  sed -i "${SEARCH_PATTERN} {x;p;x;}" /etc/apache2/sites-available/000-default.conf
+  sed -i "${SEARCH_PATTERN} i \\\tSSLEngine on" /etc/apache2/sites-available/000-default.conf
+  sed -i "${SEARCH_PATTERN} i \\\tSSLCertificateFile \/etc\/apache2\/certificate\/cert.pem" /etc/apache2/sites-available/000-default.conf
+  sed -i "${SEARCH_PATTERN} i \\\tSSLCertificateKeyFile \/etc\/apache2\/certificate\/privkey.pem" /etc/apache2/sites-available/000-default.conf
+
+  SEARCH_PATTERN="/<Directory \/var\/www\/>/"
+
+  sed -i "${SEARCH_PATTERN} i <Directory \/var\/www\/html\/>" /etc/apache2/apache2.conf
+  sed -i "${SEARCH_PATTERN} i \\\tAllowOverride All" /etc/apache2/apache2.conf
+  sed -i "${SEARCH_PATTERN} i <\/Directory>" /etc/apache2/apache2.conf
+  sed -i "${SEARCH_PATTERN} {x;p;x;}" /etc/apache2/apache2.conf
+
+  if [ ! -d "$CERT_PATH" ]; then
+    mkdir $CERT_PATH
+  fi
+
+  a2enmod ssl
+  a2enmod rewrite
+
 fi
 
 echo "Done, Starting APACHE"
 
 # This runs apache
 apache2-foreground
+
+# Debug
+# tail -f /dev/null
