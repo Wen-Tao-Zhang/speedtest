@@ -1,3 +1,9 @@
+# ARCHIVED
+
+I was too young and this turns out to be stupid. A better practice should be using reverse proxy.
+
+# Original README of this fork
+
 The `Dockerfile` and scripts of this repo enable HTTPS in dockerized [librespeed/speedtest](https://github.com/librespeed/speedtest)
 
 Build the image:
